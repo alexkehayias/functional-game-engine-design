@@ -1,0 +1,5 @@
+* Functional Game Engine Design
+Slides from my talk at LispNYC September 8th, 2015 generated from `org-mode` using `ox-reveal`.
+
+View the slides:
+http://htmlpreview.github.io/?https://raw.githubusercontent.com/alexkehayias/functional-game-engine-design/master/game_engine_design.html

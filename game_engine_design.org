@@ -1,0 +1,429 @@
+#+Title: Functional Game Engine Design
+#+Author: Alex Kehayias
+#+Email: @alexkehayias
+
+#+OPTIONS: reveal_center:t reveal_progress:t reveal_history:t reveal_control:t
+#+OPTIONS: reveal_rolling_links:t reveal_overview:t num:nil
+#+OPTIONS: reveal_width:1140 reveal_height:900
+#+OPTIONS: toc:nil
+
+#+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/3.0.0/
+#+REVEAL_MARGIN: 0.1
+#+REVEAL_MIN_SCALE: 0.5
+#+REVEAL_MAX_SCALE: 2.5
+#+REVEAL_TRANS: none
+#+REVEAL_THEME: sky
+#+REVEAL_HLEVEL: 2
+#+REVEAL_HEAD_PREAMBLE: <meta name="description" content="Functional Game Engine Design"/><style>pre.src {background-color: #1B1D1E; color: #f8f8f0; padding: 15px;}</style>
+#+REVEAL_POSTAMBLE: <p>Created by Alex Kehayias</p>
+#+REVEAL_PLUGINS: (markdown notes zoom)
+
+* Init
+- You can build a game
+- You can build a game engine
+** They tend to be mutually exclusive...
+* About me
+- I'm not a game developer
+- I'm not a "gamer"
+- I don't have a CS degree
+* But you should believe me anyway...
+- I'm a self taught musician
+- I'm a self taught entrepreneur
+- I'm a self taught developer
+- I create things and it's personal
+* Why another game engine? Why not use Unity/CryEngine/etc?
+** Because it's art
+** Also it's fun!!
+* Goals for a game engine
+- Modularity in adding new features and content
+- Make how the game runs declarative
+- Unit testable by mocking data only
+- Functional purity (mostly!)
+- No global state access
+- REPL driven and inspect-able
+* Example
+#+BEGIN_SRC java
+  // Example taken from http://www.gamedev.net/page/resources/_/technical/game-programming/making-a-game-engine-core-design-principles-r3210
+  // A Game object that iterates over each entity and induces side effects
+  class Game
+  {
+  Player player;
+      Enemy[] enemies;
+
+      void update()
+      {
+      foreach (Enemy enemy in enemies)
+          {
+          if (Math.abs(enemy.y - player.y) < EnemySightRange && Math.abs(enemy.x - player.x))
+              {
+              enemy.moveTowards(player.x, player.y);
+              }
+          }
+
+          if (input.keyDown('left'))
+          {
+          player.move(-1, 0);
+          }
+          // ... rest of player logic
+      }
+
+      void draw()
+      {
+      player.draw();
+      foreach (Enemy enemy in enemies)
+          {
+          enemy.draw();
+          }
+      }
+  }
+#+END_SRC
+* Functional example
+#+BEGIN_SRC clojure
+  ;; Reduce the game state over a collection of functions to get the next frame
+  (reduce (fn [accum f] (f accum))
+          state
+          [f1 f2 f3 f4])
+#+END_SRC
+* Modularity
+* State
+- The only thing that matters
+- The state is the game is the fun
+- Games are state transitions at 60 FPS
+- Games are complicated (lots of moving parts)
+- Writing games should be less complex (less intertwined parts)
+* TODO Image of a bunch of layers with an arrow showing time where each layer is a new frame
+* TODO Class hierarchies for modeling games
+Insert an image showing a game object hierarchy and the coupling that happens as a result
+* Class hierarchies for modeling games
+- Initially expresses the problem domain succinctly
+- As code bases grows and changes more ambiguity around overrides, sub classing, and cascading breaking changes
+- Dreaded "deadly diamond of death"
+- Which override overrides the override again?
+- Reusability vs decoupling
+* Entity Component System
+- Originates from the development of Dungeon Siege for use with online multiplayer demands
+- Popularized by the Unity game engine
+- Decouples object hierarchies and focuses on collections of aspects and the means of iterating over theme
+- Works really well with functional programming techniques!
+** TODO How it works
+Insert an image showing what a collection of components looks like
+** Entity
+#+BEGIN_SRC clojure
+{:player1 [:controllable :moveable :collidable]}
+#+END_SRC
+- A label
+- A collection of component labels
+** Component
+#+BEGIN_SRC clojure
+{:moveable f}
+#+END_SRC
+- A label
+- A function of state
+** System
+#+BEGIN_SRC clojure
+{:movement f}
+#+END_SRC
+- A label
+- A function of state
+- Operates on a collection of entities that have a given component ID, or not
+** Scene
+#+BEGIN_SRC clojure
+{:title-screen [:main-menu :input]
+ :game [:input :movement :ai]}
+#+END_SRC
+- A label
+- A collection of system labels in the order systems should be executed
+* Seeing a pattern here?
+- It's all data
+- It's all values
+* Gameoiconicity?
+- Game is data, data is game
+- Game can rewrite the game during game time
+dynamic as /fuck/!...
+* Implementation
+Game state is a data structure, like a database
+#+BEGIN_SRC clojure
+{}
+#+END_SRC
+All state, functions, and execution order is queried from state at game time
+#+BEGIN_SRC clojure
+(get-in state [:systems :movement])
+#+END_SRC
+The game loop recursively calls a function of state
+#+BEGIN_SRC clojure
+(f (f state))
+#+END_SRC
+* Implementation
+The game function reduces over all system functions
+#+BEGIN_SRC clojure
+(reduce (fn [state f] (f state)) init-state [s1 s2 s3 s4])
+#+END_SRC
+A system function reduces over entities that participate in a component
+#+BEGIN_SRC clojure
+(reduce f state entity-ids)
+#+END_SRC
+A component function takes state and returns new state modified for that entity ID only
+#+BEGIN_SRC clojure
+(fn [state] ...)
+#+END_SRC
+* Basically, everything is a function of the overall game state
+* The good
+- Can be easily expressed with pure functions
+- Easy to reason about
+- Parallelize-able
+- No side-effects
+- Dynamic
+- No objects
+- Easy to add/remove new functionality without rewriting other code
+- Declarative
+* The bad
+- Everyone has access to everything everywhere
+- What happens when you need parameterization?
+- Need implementation details about the shape of the data (state)
+- Performance (more on that later)
+- What if I need a component to behave different depending on who it is?
+* We need more sugar!
+* Principle of least privilege (of state)
+- Only have access to what you need
+- Only can change what belongs to you
+- Make it easy to do the right thing
+* Lenses
+#+BEGIN_SRC clojure
+(combine-fn (body-fn (args-fn input)))
+#+END_SRC
+- A way of isolating wider inputs to a function
+- Prevents access to things the functions doesn't care about
+- Eliminates the need for common call signatures
+- Implementation details hidden from the body-fn
+* Now we can focus on one aspect using pure functions
+#+BEGIN_SRC clojure
+(defn component-f
+  ;; Default args, but can be customized when declaring the component
+  [entity-id component-state opts]
+  ;; Returns updated component state
+  (body ...))
+
+;; Wrapped with mk-component-fn it returns a function that takes
+;; game state and entity-id as arguments
+((mk-component-fn :component-1 component-f) state :player1)
+#+END_SRC
+- mk-component-fn is a lense
+- By default, the lense calls the component function with just the state it needs
+- To customize, provide an :args-fn and :format-fn to mk-component-fn options
+* Polymorphism
+- By passing in an entity ID we can make a decision about what the component should do
+- multimethods, protocols, conditionals to handle different implementations of the same component
+- As long as it follows the component fn spec, it will work
+* Polymorphism example
+#+BEGIN_SRC clojure
+;; Dispatch on the entity-id
+(defmulti move (fn [entity-id & args] entity-id))
+
+(defmethod move :default
+  (fn [_ component-state opts]
+    (body ...)))
+
+(defmethod move :player1
+  (fn [_ component-state opts]
+    (update component-state :pos #(map inc %))))
+#+END_SRC
+* Sharing state ಠ__ಠ
+- Games tend to have things that interact with each other
+- Share component state without tightly coupling
+- Read only access
+** Coupling
+#+BEGIN_SRC clojure
+(defn attack
+  [entity-id component-state player-state]
+  (when (colliding? component-state player-state)
+    (set! (.-damage player-state) 5))
+  component-state)
+#+END_SRC
+- Couples the player damage logic in the enemies attack logic
+- Implicitly alters state
+- Requires coordination if you want to parallelize
+- Would not be able to use immutable data structures
+** Use an event queue
+- Loose coupling (still need to know shape of data)
+- Any component can emit a message with an event ID
+- Any component can subscribe to messages matching the event ID
+- Kind of like streams
+- By default, message inbox is provided in the last arg to the component function
+** Using the event inbox
+#+BEGIN_SRC clojure
+(defn attack
+  [entity-id component-state player-state]
+  (if (colliding? component-state player-state)
+    [component-state (mk-event {:damage 5} [:attack :player1])]
+    component-state))
+
+(defn health
+  [entity-id component-state {:keys [inbox]}]
+  (update component-state
+          :hitpoints
+          (fn [hitpoints]
+            (reduce #(+ %1 (get-in %2 [:msg :damage]))
+                    hitpoints
+                    inbox))))
+#+END_SRC
+- Moves the implementation of taking damage to the receiver (uni-directional vs bi-directional)
+- Provides a contract for any component to damage an entity that has the health component
+- Can implement new game mechanics around damage and health in one place
+* Making the game declarative
+- Capture how the game runs in one place
+- Use the full tooling of higher order functions and data manipulation functions
+- Game engine needs to only interpret the spec
+- Doesn't matter who or how the spec is generated
+- No macros, just data
+...maybe macros later, for syntactic sugar only
+* Declarative game
+#+BEGIN_SRC clojure
+(mk-game-state
+  ;; Starting with an empty hashmap or an existing hashmap
+  {}
+  :default ;; What scene ID to start with
+  ;; A scene with an ID of :default that has a collection of systems
+  ;; to be called in sequential order
+  [:scene :default [:input
+                    :movement
+                    :animate
+                    :render
+                    :events]]
+  ;; Event system to be used for inter component communication
+  [:system :events event-system]
+  ;; Updates the user input from keyboard
+  [:system :input input-system]
+  ;; Render system for drawing sprites
+  [:system :render render-system]
+  ;; Animation system for animating sprites
+  [:system :animate animation-system :animateable]
+  ;; Animation component that subscribes to action events
+  [:component :animateable
+   [animate {:args-fn include-moveable-state
+             :subscriptions [:action]}]]
+  ;;
+  [:system :movement movement-system :moveable]
+  [:component :moveable
+   [move {:subscriptions [:move-change :collision]}]])
+#+END_SRC
+* Interpreting the game spec
+#+BEGIN_SRC clojure
+(defmulti mk-state
+  (fn [state args] (first args)))
+
+(defmethod mk-state :entity
+  [state [_ & args]]
+  (apply (partial ces/mk-entity state) args))
+
+(defmethod mk-state :component
+  [state [_ & args]]
+  (apply (partial ces/mk-component state) args))
+
+(defmethod mk-state :system
+  [state [_ & args]]
+  (apply (partial ces/mk-system state) args))
+
+(defmethod mk-state :scene
+  [state [_ & args]]
+  (apply (partial ces/mk-scene state) args))
+
+(defn mk-game-state
+  [state init-scene-id & specs]
+  (reduce (fn [accum args] (mk-state accum args))
+          (assoc-in state scene-id-path init-scene-id)
+          specs))
+#+END_SRC
+* Some limitations
+- Anything that is not def'd, i.e anonymous functions, can not be re-evaluated while the game is running
+- Component functions rely heavily on higher order functions that return anonymous functions
+- Workaround is to use a component function as a light wrapper around smaller def'd functions
+- Maybe macros can help?
+* Performance tuning
+** Variadic function signatures
+#+BEGIN_SRC clojure
+(defn foo [x & args]
+  (body ..))
+#+END_SRC
+- Dynamic dispatching is not great in a tight loop
+- You should probably know what signature are going to be used anyway
+- Javascript compiler (V8) bails out and can't optimize
+- Use multiple arity functions instead
+** Multiple arity functions
+#+BEGIN_SRC clojure
+(defn foo
+  ([x]
+   (foo x nil))
+  ([x y]
+   (bar x y)))
+#+END_SRC
+- Finite number arities, not infinite
+- Can be optimized by the compiler/runtime
+- Much faster
+** Avoid partials
+#+BEGIN_SRC clojure
+(apply (partial x) [y z])
+#+END_SRC
+** Empty checking
+#+BEGIN_SRC clojure
+;; Bad
+(empty? [])
+;; Good
+(seq [])
+#+END_SRC
+** Runtime polymorphism
+#+BEGIN_SRC clojure
+;; Bad
+(defmulti foo (fn [& args] ...))
+;; Good, but less elegant
+(condp = x
+  ...)
+;; Fastest??
+(defprotocol Fooable
+  (foo [this x]))
+
+(deftype Thing
+  Fooable
+  (foo [this x] ...))
+#+END_SRC
+- multimethods are too slow for a tight loop
+- condp compiles to a conditional that can be optimized
+- Protocols and types should be fastest, but static
+- Tradeoff speed vs dynamism
+** Literals
+#+BEGIN_SRC clojure
+;; Vector 1 2 3 is constructed every time foo is called
+(defn foo [x]
+  (concat [x] [1 2 3]))
+;; Skips the construction of a persistent vector each time
+;; foo is called
+(def one-two-three [1 2 3])
+
+(defn foo [x]
+  (concat [x] one-two-three))
+#+END_SRC
+- If it's hardcoded inside a function, then def it
+- In clojure, use the ^const type hint to have the compiler inline it
+** Lazyness
+- Most of the Clojure core is lazy map/for/concat/filter etc.
+- Game code is usually eager and inputs are finite
+- Favor reduce over map
+- Write your own for loop that does not use lazy-seq
+** ClojureScript specific
+- Clojure only evaluates false for nil and false, not null/undefined/NaN/""/0
+- If you already know it's a boolean, skip the extra checking with a typehint ^boolean
+** Immutability?
+- Tried to write my own data structure to take advantage of mutability
+- Mine was slower
+- Your's will probably be slower
+- Use a profiler, it's probably not this!
+- Use interop with the host environment if you really need
+** The slowest part is usually your implementation, not functional programming
+* The Functional Game Engine I'm Building
+- Chocolatier
+- https://github.com/alexkehayias/chocolatier
+- A functional, repl-driven, game engine targeting 2D games in the browser written in ClojureScript
+- Actively in development, not stable
+* Let's make creating games sweeter!
+Thank you!
+@alexkehayias
+https://github.com/alexkehayias/chocolatier

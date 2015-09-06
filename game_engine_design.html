@@ -1,0 +1,862 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Functional Game Engine Design</title>
+<meta name="author" content="(Alex Kehayias)"/>
+<link rel="stylesheet" href="http://cdn.jsdelivr.net/reveal.js/3.0.0/css/reveal.css"/>
+<link rel="stylesheet" href="http://cdn.jsdelivr.net/reveal.js/3.0.0/css/theme/sky.css" id="theme"/>
+<link rel="stylesheet" href=""/>
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'http://cdn.jsdelivr.net/reveal.js/3.0.0/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+<meta name="description" content="Functional Game Engine Design"/><style>pre.src {background-color: #1B1D1E; color: #f8f8f0; padding: 15px;}</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide">
+<h1>Functional Game Engine Design</h1>
+<h2>Alex Kehayias</h2>
+<h2><a href="mailto:@alexkehayias">@alexkehayias</a></h2>
+<h2></h2>
+</section>
+
+<section>
+<section id="slide-orgheadline2">
+<h2 id="orgheadline2">Init</h2>
+<ul>
+<li>You can build a game</li>
+<li>You can build a game engine</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline1">
+<h3 id="orgheadline1">They tend to be mutually exclusive&#x2026;</h3>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline3">
+<h2 id="orgheadline3">About me</h2>
+<ul>
+<li>I'm not a game developer</li>
+<li>I'm not a "gamer"</li>
+<li>I don't have a CS degree</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline4">
+<h2 id="orgheadline4">But you should believe me anyway&#x2026;</h2>
+<ul>
+<li>I'm a self taught musician</li>
+<li>I'm a self taught entrepreneur</li>
+<li>I'm a self taught developer</li>
+<li>I create things and it's personal</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline7">
+<h2 id="orgheadline7">Why another game engine? Why not use Unity/CryEngine/etc?</h2>
+<div class="outline-text-2" id="text-orgheadline7">
+</div></section>
+</section>
+<section>
+<section id="slide-orgheadline5">
+<h3 id="orgheadline5">Because it's art</h3>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline6">
+<h3 id="orgheadline6">Also it's fun!!</h3>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline8">
+<h2 id="orgheadline8">Goals for a game engine</h2>
+<ul>
+<li>Modularity in adding new features and content</li>
+<li>Make how the game runs declarative</li>
+<li>Unit testable by mocking data only</li>
+<li>Functional purity (mostly!)</li>
+<li>No global state access</li>
+<li>REPL driven and inspect-able</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline9">
+<h2 id="orgheadline9">Example</h2>
+<div class="org-src-container">
+
+<pre  class="src src-java">  <span style="color: #465457;">// </span><span style="color: #465457;">Example taken from http://www.gamedev.net/page/resources/_/technical/game-programming/making-a-game-engine-core-design-principles-r3210</span>
+  <span style="color: #465457;">// </span><span style="color: #465457;">A Game object that iterates over each entity and induces side effects</span>
+  <span style="color: #f92672; font-weight: bold;">class</span> <span style="color: #66d9ef; font-weight: bold;">Game</span>
+  {
+  <span style="color: #66d9ef; font-weight: bold;">Player</span> <span style="color: color-152;">player</span>;
+      <span style="color: #66d9ef; font-weight: bold;">Enemy</span>[] <span style="color: color-152;">enemies</span>;
+
+      <span style="color: #66d9ef; font-weight: bold;">void</span> <span style="color: #a6e22e;">update</span>()
+      {
+      <span style="color: color-152;">foreach</span> (Enemy enemy <span style="color: #66d9ef; font-weight: bold;">in</span> <span style="color: color-152;">enemies</span>)
+          {
+          <span style="color: #f92672; font-weight: bold;">if</span> (Math.abs(enemy.y - player.y) &lt; EnemySightRange &amp;&amp; Math.abs(enemy.x - player.x))
+              {
+              enemy.moveTowards(player.x, player.y);
+              }
+          }
+
+          <span style="color: #f92672; font-weight: bold;">if</span> (input.keyDown(<span style="color: #e6db74;">'left'</span>))
+          {
+          player.move(-1, 0);
+          }
+          <span style="color: #465457;">// </span><span style="color: #465457;">... rest of player logic</span>
+      }
+
+      <span style="color: #66d9ef; font-weight: bold;">void</span> <span style="color: #a6e22e;">draw</span>()
+      {
+      player.draw();
+      <span style="color: color-152;">foreach</span> (Enemy enemy <span style="color: #66d9ef; font-weight: bold;">in</span> <span style="color: color-152;">enemies</span>)
+          {
+          enemy.draw();
+          }
+      }
+  }
+</pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline10">
+<h2 id="orgheadline10">Functional example</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">  <span style="color: #465457;">;; </span><span style="color: #465457;">Reduce the game state over a collection of functions to get the next frame</span>
+  <span style="color: #8c8c8c;">(</span>reduce (fn [accum f] <span style="color: #8c8c8c;">(</span>f accum<span style="color: #8c8c8c;">))</span>
+          state
+          [f1 f2 f3 f4]<span style="color: #8c8c8c;">)</span>
+</pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline11">
+<h2 id="orgheadline11">Modularity</h2>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline12">
+<h2 id="orgheadline12">State</h2>
+<ul>
+<li>The only thing that matters</li>
+<li>The state is the game is the fun</li>
+<li>Games are state transitions at 60 FPS</li>
+<li>Games are complicated (lots of moving parts)</li>
+<li>Writing games should be less complex (less intertwined parts)</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline13">
+<h2 id="orgheadline13"><span class="todo TODO">TODO</span> Image of a bunch of layers with an arrow showing time where each layer is a new frame</h2>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline14">
+<h2 id="orgheadline14"><span class="todo TODO">TODO</span> Class hierarchies for modeling games</h2>
+<p>
+Insert an image showing a game object hierarchy and the coupling that happens as a result
+</p>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline15">
+<h2 id="orgheadline15">Class hierarchies for modeling games</h2>
+<ul>
+<li>Initially expresses the problem domain succinctly</li>
+<li>As code bases grows and changes more ambiguity around overrides, sub classing, and cascading breaking changes</li>
+<li>Dreaded "deadly diamond of death"</li>
+<li>Which override overrides the override again?</li>
+<li>Reusability vs decoupling</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline21">
+<h2 id="orgheadline21">Entity Component System</h2>
+<ul>
+<li>Originates from the development of Dungeon Siege for use with online multiplayer demands</li>
+<li>Popularized by the Unity game engine</li>
+<li>Decouples object hierarchies and focuses on collections of aspects and the means of iterating over theme</li>
+<li>Works really well with functional programming techniques!</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline16">
+<h3 id="orgheadline16"><span class="todo TODO">TODO</span> How it works</h3>
+<p>
+Insert an image showing what a collection of components looks like
+</p>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline17">
+<h3 id="orgheadline17">Entity</h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">{<span style="color: #ae81ff;">:player1</span> [<span style="color: #ae81ff;">:controllable</span> <span style="color: #ae81ff;">:moveable</span> <span style="color: #ae81ff;">:collidable</span>]}
+</pre>
+</div>
+<ul>
+<li>A label</li>
+<li>A collection of component labels</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline18">
+<h3 id="orgheadline18">Component</h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">{<span style="color: #ae81ff;">:moveable</span> f}
+</pre>
+</div>
+<ul>
+<li>A label</li>
+<li>A function of state</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline19">
+<h3 id="orgheadline19">System</h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">{<span style="color: #ae81ff;">:movement</span> f}
+</pre>
+</div>
+<ul>
+<li>A label</li>
+<li>A function of state</li>
+<li>Operates on a collection of entities that have a given component ID, or not</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline20">
+<h3 id="orgheadline20">Scene</h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">{<span style="color: #ae81ff;">:title-screen</span> [<span style="color: #ae81ff;">:main-menu</span> <span style="color: #ae81ff;">:input</span>]
+ <span style="color: #ae81ff;">:game</span> [<span style="color: #ae81ff;">:input</span> <span style="color: #ae81ff;">:movement</span> <span style="color: #ae81ff;">:ai</span>]}
+</pre>
+</div>
+<ul>
+<li>A label</li>
+<li>A collection of system labels in the order systems should be executed</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline22">
+<h2 id="orgheadline22">Seeing a pattern here?</h2>
+<ul>
+<li>It's all data</li>
+<li>It's all values</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline23">
+<h2 id="orgheadline23">Gameoiconicity?</h2>
+<ul>
+<li>Game is data, data is game</li>
+<li>Game can rewrite the game during game time</li>
+
+</ul>
+<p>
+dynamic as <i>fuck</i>!&#x2026;
+</p>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline24">
+<h2 id="orgheadline24">Implementation</h2>
+<p>
+Game state is a data structure, like a database
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">{}
+</pre>
+</div>
+<p>
+All state, functions, and execution order is queried from state at game time
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span>get-in state [<span style="color: #ae81ff;">:systems</span> <span style="color: #ae81ff;">:movement</span>]<span style="color: #8c8c8c;">)</span>
+</pre>
+</div>
+<p>
+The game loop recursively calls a function of state
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span>f <span style="color: #8c8c8c;">(</span>f state<span style="color: #8c8c8c;">))</span>
+</pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline25">
+<h2 id="orgheadline25">Implementation</h2>
+<p>
+The game function reduces over all system functions
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span>reduce (fn [state f] <span style="color: #8c8c8c;">(</span>f state<span style="color: #8c8c8c;">))</span> init-state [s1 s2 s3 s4]<span style="color: #8c8c8c;">)</span>
+</pre>
+</div>
+<p>
+A system function reduces over entities that participate in a component
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span>reduce f state entity-ids<span style="color: #8c8c8c;">)</span>
+</pre>
+</div>
+<p>
+A component function takes state and returns new state modified for that entity ID only
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">(fn [state] ...<span style="color: #8c8c8c;">)</span>
+</pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline26">
+<h2 id="orgheadline26">Basically, everything is a function of the overall game state</h2>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline27">
+<h2 id="orgheadline27">The good</h2>
+<ul>
+<li>Can be easily expressed with pure functions</li>
+<li>Easy to reason about</li>
+<li>Parallelize-able</li>
+<li>No side-effects</li>
+<li>Dynamic</li>
+<li>No objects</li>
+<li>Easy to add/remove new functionality without rewriting other code</li>
+<li>Declarative</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline28">
+<h2 id="orgheadline28">The bad</h2>
+<ul>
+<li>Everyone has access to everything everywhere</li>
+<li>What happens when you need parameterization?</li>
+<li>Need implementation details about the shape of the data (state)</li>
+<li>Performance (more on that later)</li>
+<li>What if I need a component to behave different depending on who it is?</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline29">
+<h2 id="orgheadline29">We need more sugar!</h2>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline30">
+<h2 id="orgheadline30">Principle of least privilege (of state)</h2>
+<ul>
+<li>Only have access to what you need</li>
+<li>Only can change what belongs to you</li>
+<li>Make it easy to do the right thing</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline31">
+<h2 id="orgheadline31">Lenses</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span>combine-fn <span style="color: #8c8c8c;">(</span>body-fn <span style="color: #8c8c8c;">(</span>args-fn input<span style="color: #8c8c8c;">)))</span>
+</pre>
+</div>
+<ul>
+<li>A way of isolating wider inputs to a function</li>
+<li>Prevents access to things the functions doesn't care about</li>
+<li>Eliminates the need for common call signatures</li>
+<li>Implementation details hidden from the body-fn</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline32">
+<h2 id="orgheadline32">Now we can focus on one aspect using pure functions</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defn</span> <span style="color: #a6e22e;">component-f</span>
+  <span style="color: #465457;">;; </span><span style="color: #465457;">Default args, but can be customized when declaring the component</span>
+  [entity-id component-state opts]
+  <span style="color: #465457;">;; </span><span style="color: #465457;">Returns updated component state</span>
+  <span style="color: #8c8c8c;">(</span>body ...<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #465457;">;; </span><span style="color: #465457;">Wrapped with mk-component-fn it returns a function that takes</span>
+<span style="color: #465457;">;; </span><span style="color: #465457;">game state and entity-id as arguments</span>
+<span style="color: #8c8c8c;">((</span>mk-component-fn <span style="color: #ae81ff;">:component-1</span> component-f<span style="color: #8c8c8c;">)</span> state <span style="color: #ae81ff;">:player1</span><span style="color: #8c8c8c;">)</span>
+</pre>
+</div>
+<ul>
+<li>mk-component-fn is a lense</li>
+<li>By default, the lense calls the component function with just the state it needs</li>
+<li>To customize, provide an :args-fn and :format-fn to mk-component-fn options</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline33">
+<h2 id="orgheadline33">Polymorphism</h2>
+<ul>
+<li>By passing in an entity ID we can make a decision about what the component should do</li>
+<li>multimethods, protocols, conditionals to handle different implementations of the same component</li>
+<li>As long as it follows the component fn spec, it will work</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline34">
+<h2 id="orgheadline34">Polymorphism example</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #465457;">;; </span><span style="color: #465457;">Dispatch on the entity-id</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defmulti</span> <span style="color: #a6e22e;">move</span> (fn [entity-id &amp; args] entity-id<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defmethod</span> <span style="color: #a6e22e;">move</span> <span style="color: #ae81ff;">:default</span>
+  (fn [_ component-state opts]
+    <span style="color: #8c8c8c;">(</span>body ...<span style="color: #8c8c8c;">)))</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defmethod</span> <span style="color: #a6e22e;">move</span> <span style="color: #ae81ff;">:player1</span>
+  (fn [_ component-state opts]
+    <span style="color: #8c8c8c;">(</span>update component-state <span style="color: #ae81ff;">:pos</span> #<span style="color: #8c8c8c;">(</span>map inc <span style="color: color-152;">%</span><span style="color: #8c8c8c;">))))</span>
+</pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline38">
+<h2 id="orgheadline38">Sharing state ಠ_<sub>ಠ</sub></h2>
+<ul>
+<li>Games tend to have things that interact with each other</li>
+<li>Share component state without tightly coupling</li>
+<li>Read only access</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline35">
+<h3 id="orgheadline35">Coupling</h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defn</span> <span style="color: #a6e22e;">attack</span>
+  [entity-id component-state player-state]
+  <span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">when</span> <span style="color: #8c8c8c;">(</span>colliding? component-state player-state<span style="color: #8c8c8c;">)</span>
+    <span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">set!</span> <span style="color: #8c8c8c;">(</span><span style="color: #a6e22e;">.-damage</span> player-state<span style="color: #8c8c8c;">)</span> 5<span style="color: #8c8c8c;">))</span>
+  component-state<span style="color: #8c8c8c;">)</span>
+</pre>
+</div>
+<ul>
+<li>Couples the player damage logic in the enemies attack logic</li>
+<li>Implicitly alters state</li>
+<li>Requires coordination if you want to parallelize</li>
+<li>Would not be able to use immutable data structures</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline36">
+<h3 id="orgheadline36">Use an event queue</h3>
+<ul>
+<li>Loose coupling (still need to know shape of data)</li>
+<li>Any component can emit a message with an event ID</li>
+<li>Any component can subscribe to messages matching the event ID</li>
+<li>Kind of like streams</li>
+<li>By default, message inbox is provided in the last arg to the component function</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline37">
+<h3 id="orgheadline37">Using the event inbox</h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defn</span> <span style="color: #a6e22e;">attack</span>
+  [entity-id component-state player-state]
+  <span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">if</span> <span style="color: #8c8c8c;">(</span>colliding? component-state player-state<span style="color: #8c8c8c;">)</span>
+    [component-state <span style="color: #8c8c8c;">(</span>mk-event {<span style="color: #ae81ff;">:damage</span> 5} [<span style="color: #ae81ff;">:attack</span> <span style="color: #ae81ff;">:player1</span>]<span style="color: #8c8c8c;">)</span>]
+    component-state<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defn</span> <span style="color: #a6e22e;">health</span>
+  [entity-id component-state {<span style="color: #ae81ff;">:keys</span> [inbox]}]
+  <span style="color: #8c8c8c;">(</span>update component-state
+          <span style="color: #ae81ff;">:hitpoints</span>
+          (fn [hitpoints]
+            <span style="color: #8c8c8c;">(</span>reduce #<span style="color: #8c8c8c;">(</span>+ <span style="color: color-152;">%1</span> <span style="color: #8c8c8c;">(</span>get-in <span style="color: color-152;">%2</span> [<span style="color: #ae81ff;">:msg</span> <span style="color: #ae81ff;">:damage</span>]<span style="color: #8c8c8c;">))</span>
+                    hitpoints
+                    inbox<span style="color: #8c8c8c;">))))</span>
+</pre>
+</div>
+<ul>
+<li>Moves the implementation of taking damage to the receiver (uni-directional vs bi-directional)</li>
+<li>Provides a contract for any component to damage an entity that has the health component</li>
+<li>Can implement new game mechanics around damage and health in one place</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline39">
+<h2 id="orgheadline39">Making the game declarative</h2>
+<ul>
+<li>Capture how the game runs in one place</li>
+<li>Use the full tooling of higher order functions and data manipulation functions</li>
+<li>Game engine needs to only interpret the spec</li>
+<li>Doesn't matter who or how the spec is generated</li>
+<li>No macros, just data</li>
+
+</ul>
+<p>
+&#x2026;maybe macros later, for syntactic sugar only
+</p>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline40">
+<h2 id="orgheadline40">Declarative game</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span>mk-game-state
+  <span style="color: #465457;">;; </span><span style="color: #465457;">Starting with an empty hashmap or an existing hashmap</span>
+  {}
+  <span style="color: #ae81ff;">:default</span> <span style="color: #465457;">;; </span><span style="color: #465457;">What scene ID to start with</span>
+  <span style="color: #465457;">;; </span><span style="color: #465457;">A scene with an ID of :default that has a collection of systems</span>
+  <span style="color: #465457;">;; </span><span style="color: #465457;">to be called in sequential order</span>
+  [<span style="color: #ae81ff;">:scene</span> <span style="color: #ae81ff;">:default</span> [<span style="color: #ae81ff;">:input</span>
+                    <span style="color: #ae81ff;">:movement</span>
+                    <span style="color: #ae81ff;">:animate</span>
+                    <span style="color: #ae81ff;">:render</span>
+                    <span style="color: #ae81ff;">:events</span>]]
+  <span style="color: #465457;">;; </span><span style="color: #465457;">Event system to be used for inter component communication</span>
+  [<span style="color: #ae81ff;">:system</span> <span style="color: #ae81ff;">:events</span> event-system]
+  <span style="color: #465457;">;; </span><span style="color: #465457;">Updates the user input from keyboard</span>
+  [<span style="color: #ae81ff;">:system</span> <span style="color: #ae81ff;">:input</span> input-system]
+  <span style="color: #465457;">;; </span><span style="color: #465457;">Render system for drawing sprites</span>
+  [<span style="color: #ae81ff;">:system</span> <span style="color: #ae81ff;">:render</span> render-system]
+  <span style="color: #465457;">;; </span><span style="color: #465457;">Animation system for animating sprites</span>
+  [<span style="color: #ae81ff;">:system</span> <span style="color: #ae81ff;">:animate</span> animation-system <span style="color: #ae81ff;">:animateable</span>]
+  <span style="color: #465457;">;; </span><span style="color: #465457;">Animation component that subscribes to action events</span>
+  [<span style="color: #ae81ff;">:component</span> <span style="color: #ae81ff;">:animateable</span>
+   [animate {<span style="color: #ae81ff;">:args-fn</span> include-moveable-state
+             <span style="color: #ae81ff;">:subscriptions</span> [<span style="color: #ae81ff;">:action</span>]}]]
+  <span style="color: #465457;">;;</span>
+  [<span style="color: #ae81ff;">:system</span> <span style="color: #ae81ff;">:movement</span> movement-system <span style="color: #ae81ff;">:moveable</span>]
+  [<span style="color: #ae81ff;">:component</span> <span style="color: #ae81ff;">:moveable</span>
+   [move {<span style="color: #ae81ff;">:subscriptions</span> [<span style="color: #ae81ff;">:move-change</span> <span style="color: #ae81ff;">:collision</span>]}]]<span style="color: #8c8c8c;">)</span>
+</pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline41">
+<h2 id="orgheadline41">Interpreting the game spec</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defmulti</span> <span style="color: #a6e22e;">mk-state</span>
+  (fn [state args] <span style="color: #8c8c8c;">(</span>first args<span style="color: #8c8c8c;">)))</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defmethod</span> <span style="color: #a6e22e;">mk-state</span> <span style="color: #ae81ff;">:entity</span>
+  [state [_ &amp; args]]
+  <span style="color: #8c8c8c;">(</span>apply <span style="color: #8c8c8c;">(</span>partial <span style="color: #66d9ef; font-weight: bold;">ces</span>/mk-entity state<span style="color: #8c8c8c;">)</span> args<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defmethod</span> <span style="color: #a6e22e;">mk-state</span> <span style="color: #ae81ff;">:component</span>
+  [state [_ &amp; args]]
+  <span style="color: #8c8c8c;">(</span>apply <span style="color: #8c8c8c;">(</span>partial <span style="color: #66d9ef; font-weight: bold;">ces</span>/mk-component state<span style="color: #8c8c8c;">)</span> args<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defmethod</span> <span style="color: #a6e22e;">mk-state</span> <span style="color: #ae81ff;">:system</span>
+  [state [_ &amp; args]]
+  <span style="color: #8c8c8c;">(</span>apply <span style="color: #8c8c8c;">(</span>partial <span style="color: #66d9ef; font-weight: bold;">ces</span>/mk-system state<span style="color: #8c8c8c;">)</span> args<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defmethod</span> <span style="color: #a6e22e;">mk-state</span> <span style="color: #ae81ff;">:scene</span>
+  [state [_ &amp; args]]
+  <span style="color: #8c8c8c;">(</span>apply <span style="color: #8c8c8c;">(</span>partial <span style="color: #66d9ef; font-weight: bold;">ces</span>/mk-scene state<span style="color: #8c8c8c;">)</span> args<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defn</span> <span style="color: #a6e22e;">mk-game-state</span>
+  [state init-scene-id &amp; specs]
+  <span style="color: #8c8c8c;">(</span>reduce (fn [accum args] <span style="color: #8c8c8c;">(</span>mk-state accum args<span style="color: #8c8c8c;">))</span>
+          <span style="color: #8c8c8c;">(</span>assoc-in state scene-id-path init-scene-id<span style="color: #8c8c8c;">)</span>
+          specs<span style="color: #8c8c8c;">))</span>
+</pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline42">
+<h2 id="orgheadline42">Some limitations</h2>
+<ul>
+<li>Anything that is not def'd, i.e anonymous functions, can not be re-evaluated while the game is running</li>
+<li>Component functions rely heavily on higher order functions that return anonymous functions</li>
+<li>Workaround is to use a component function as a light wrapper around smaller def'd functions</li>
+<li>Maybe macros can help?</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline52">
+<h2 id="orgheadline52">Performance tuning</h2>
+<p>
+Functional programming ain't free!
+</p>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline43">
+<h3 id="orgheadline43">Variadic function signatures</h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defn</span> <span style="color: #a6e22e;">foo</span> [x &amp; args]
+  <span style="color: #8c8c8c;">(</span>body ..<span style="color: #8c8c8c;">))</span>
+</pre>
+</div>
+<ul>
+<li>Dynamic dispatching is not great in a tight loop</li>
+<li>You should probably know what signature are going to be used anyway</li>
+<li>Javascript compiler (V8) bails out and can't optimize</li>
+<li>Use multiple arity functions instead</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline44">
+<h3 id="orgheadline44">Multiple arity functions</h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defn</span> <span style="color: #a6e22e;">foo</span>
+  <span style="color: #8c8c8c;">(</span>[x]
+   <span style="color: #8c8c8c;">(</span>foo x <span style="color: #ae81ff;">nil</span><span style="color: #8c8c8c;">))</span>
+  <span style="color: #8c8c8c;">(</span>[x y]
+   <span style="color: #8c8c8c;">(</span>bar x y<span style="color: #8c8c8c;">)))</span>
+</pre>
+</div>
+<ul>
+<li>Finite number arities, not infinite</li>
+<li>Can be optimized by the compiler/runtime</li>
+<li>Much faster</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline45">
+<h3 id="orgheadline45">Avoid partials</h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span>apply <span style="color: #8c8c8c;">(</span>partial x<span style="color: #8c8c8c;">)</span> [y z]<span style="color: #8c8c8c;">)</span>
+</pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline46">
+<h3 id="orgheadline46">Empty checking</h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #465457;">;; </span><span style="color: #465457;">Bad</span>
+<span style="color: #8c8c8c;">(</span>empty? []<span style="color: #8c8c8c;">)</span>
+<span style="color: #465457;">;; </span><span style="color: #465457;">Good</span>
+<span style="color: #8c8c8c;">(</span>seq []<span style="color: #8c8c8c;">)</span>
+</pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline47">
+<h3 id="orgheadline47">Runtime polymorphism</h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #465457;">;; </span><span style="color: #465457;">Bad</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defmulti</span> <span style="color: #a6e22e;">foo</span> (fn [&amp; args] ...<span style="color: #8c8c8c;">))</span>
+<span style="color: #465457;">;; </span><span style="color: #465457;">Good, but less elegant</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">condp</span> = x
+  ...<span style="color: #8c8c8c;">)</span>
+<span style="color: #465457;">;; </span><span style="color: #465457;">Fastest??</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defprotocol</span> <span style="color: #66d9ef; font-weight: bold;">Fooable</span>
+  <span style="color: #8c8c8c;">(</span>foo [this x]<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">deftype</span> <span style="color: #66d9ef; font-weight: bold;">Thing</span>
+  <span style="color: #66d9ef; font-weight: bold;">Fooable</span>
+  <span style="color: #8c8c8c;">(</span>foo [this x] ...<span style="color: #8c8c8c;">))</span>
+</pre>
+</div>
+<ul>
+<li>multimethods are too slow for a tight loop</li>
+<li>condp compiles to a conditional that can be optimized</li>
+<li>Protocols and types should be fastest, but static</li>
+<li>Tradeoff speed vs dynamism</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline48">
+<h3 id="orgheadline48">Literals</h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #465457;">;; </span><span style="color: #465457;">Vector 1 2 3 is constructed every time foo is called</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defn</span> <span style="color: #a6e22e;">foo</span> [x]
+  <span style="color: #8c8c8c;">(</span>concat [x] [1 2 3]<span style="color: #8c8c8c;">))</span>
+<span style="color: #465457;">;; </span><span style="color: #465457;">Skips the construction of a persistent vector each time</span>
+<span style="color: #465457;">;; </span><span style="color: #465457;">foo is called</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">def</span> <span style="color: color-152;">one-two-three</span> [1 2 3]<span style="color: #8c8c8c;">)</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defn</span> <span style="color: #a6e22e;">foo</span> [x]
+  <span style="color: #8c8c8c;">(</span>concat [x] one-two-three<span style="color: #8c8c8c;">))</span>
+</pre>
+</div>
+<ul>
+<li>If it's hardcoded inside a function, then def it</li>
+<li>In clojure, use the ^const type hint to have the compiler inline it</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline49">
+<h3 id="orgheadline49">ClojureScript specific</h3>
+<ul>
+<li>Clojure only evaluates false for nil and false, not null/undefined/NaN/""/0</li>
+<li>If you already know it's a boolean, skip the extra checking with a typehint ^boolean</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline50">
+<h3 id="orgheadline50">Immutability?</h3>
+<ul>
+<li>Tried to write my own data structure to take advantage of mutability</li>
+<li>Mine was slower</li>
+<li>Your's will probably be slower</li>
+<li>Use a profiler, it's probably not this!</li>
+<li>Use interop with the host environment if you really need</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline51">
+<h3 id="orgheadline51">The slowest part is usually your implementation, not functional programming</h3>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline53">
+<h2 id="orgheadline53">The Functional Game Engine I'm Building</h2>
+<ul>
+<li>Chocolatier</li>
+<li><a href="https://github.com/alexkehayias/chocolatier">https://github.com/alexkehayias/chocolatier</a></li>
+<li>A functional, repl-driven, game engine targeting 2D games in the browser written in ClojureScript</li>
+<li>Actively in development, not stable</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline54">
+<h2 id="orgheadline54">Let's make creating games sweeter!</h2>
+<p>
+Thank you!
+@alexkehayias
+<a href="https://github.com/alexkehayias/chocolatier">https://github.com/alexkehayias/chocolatier</a>
+</p>
+</section>
+</section>
+</div>
+</div>
+<p>Created by Alex Kehayias</p>
+<script src="http://cdn.jsdelivr.net/reveal.js/3.0.0/lib/js/head.min.js"></script>
+<script src="http://cdn.jsdelivr.net/reveal.js/3.0.0/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: true,
+center: true,
+slideNumber: true,
+rollingLinks: true,
+keyboard: true,
+overview: true,
+width: 1140,
+height: 900,
+margin: 0.10,
+minScale: 0.50,
+maxScale: 2.50,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'none', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+});
+</script>
+</body>
+</html>
