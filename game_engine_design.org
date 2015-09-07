@@ -199,6 +199,23 @@ A component function takes state and returns new state modified for that entity 
 - Prevents access to things the functions doesn't care about
 - Eliminates the need for common call signatures
 - Implementation details hidden from the body-fn
+* Lense Example
+#+BEGIN_SRC clojure
+(defn lense [args-f body-f combine-f]
+  (fn [input]
+    (combine-f input (body-f (args-f input)))))
+
+(def component-fn
+  (lense (fn [state] (get state :foo))
+         (fn [component-state] (update component-state :x inc))
+         (fn [state results] (assoc state :foo results))))
+#+END_SRC
+The body function is isolated from knowing anything about the input data
+#+BEGIN_SRC clojure
+(component-fn {:renderer {} :stuff {} :foo {:x 1}})
+>> {:renderer {} :stuff {} :foo {:x 2}}
+#+END_SRC
+Component function is called with the entire state as input
 * Now we can focus on one aspect using pure functions
 #+BEGIN_SRC clojure
 (defn component-f
@@ -237,42 +254,82 @@ A component function takes state and returns new state modified for that entity 
 - Read only access
 ** Coupling
 #+BEGIN_SRC clojure
-(defn attack
-  [entity-id component-state player-state]
-  (when (colliding? component-state player-state)
-    (set! (.-damage player-state) 5))
+(defn blob-component
+  [entity-id component-state opts]
+  (if (get component-state :colliding?)
+    (if (collided-with-enemy? component-state)
+      (update component-state :health dec)
+      (if (get component-state :moving?)
+         (assoc component-state :offset [0 0])
+         (assoc component-state :offset (get component-state :move-offset))))
   component-state)
 #+END_SRC
-- Couples the player damage logic in the enemies attack logic
-- Implicitly alters state
-- Requires coordination if you want to parallelize
-- Would not be able to use immutable data structures
+- Solves communication between aspects by combining them into one component :(
+- Couples movement, collision, and health together with state flags
+- Conditional logic exponentially increases branching paths
+- To add a new feature/aspect we potentially break other paths
 ** Use an event queue
+- Solves cross component communication
+- Solves cross entity communication
 - Loose coupling (still need to know shape of data)
 - Any component can emit a message with an event ID
 - Any component can subscribe to messages matching the event ID
-- Kind of like streams
 - By default, message inbox is provided in the last arg to the component function
-** Using the event inbox
+** Events implementation
 #+BEGIN_SRC clojure
-(defn attack
-  [entity-id component-state player-state]
-  (if (colliding? component-state player-state)
-    [component-state (mk-event {:damage 5} [:attack :player1])]
+(defn get-events
+  [state selectors]
+  (get-in state selectors))
+
+(defn mk-event
+  [msg selectors]
+  {:event-id (first selectors) :selectors selectors :msg msg})
+
+(defn emit-event
+  [state msg selectors]
+  (let [event (mk-event msg selectors)]
+    (update-in state selectors conj event)))
+#+END_SRC
+Example
+#+BEGIN_SRC clojure
+(emit-event {} {:foo :bar} [:collision :player1])
+>> {:collision
+..   {:player1
+..     [{:event-id :collision,
+..       :selectors [:collision :player1],
+..       :msg {:foo :bar}}]}}
+#+END_SRC
+** Using events
+#+BEGIN_SRC clojure
+(defn collision
+  [entity-id component-state opts]
+  (if-let [collider (colliding? component-state)]
+    [component-state (mk-event {:colliding collider} [:collision entity-id])]
+    component-state))
+
+(defn movement
+  [entity-id component-state {:keys [inbox]}]
+  (if (collision-event? inbox)
+    [component-state (mk-event {:offset-x 0 :offset-y 0} [:move-change entity-id])]
+    component-state))
+
+(defn position
+  [entity-id component-state {:keys [inbox]}]
+  (if-let (move-event? inbox)
+    (update component-state :pos (calculate-coords inbox))
     component-state))
 
 (defn health
   [entity-id component-state {:keys [inbox]}]
-  (update component-state
-          :hitpoints
-          (fn [hitpoints]
-            (reduce #(+ %1 (get-in %2 [:msg :damage]))
-                    hitpoints
-                    inbox))))
+  (if-let (enemy-collision-event? inbox)
+    (update component-state :hitpoints dec)
+    component-state))
 #+END_SRC
-- Moves the implementation of taking damage to the receiver (uni-directional vs bi-directional)
-- Provides a contract for any component to damage an entity that has the health component
-- Can implement new game mechanics around damage and health in one place
+** Using events
+- No longer need blob components that try to do everything
+- Moves the implementation of taking damage downstream
+- Provides a contract for any component to interact with another
+- Can implement new game mechanics (invinsibility, walk through walls, time stop)
 * Making the game declarative
 - Capture how the game runs in one place
 - Use the full tooling of higher order functions and data manipulation functions
@@ -309,6 +366,14 @@ A component function takes state and returns new state modified for that entity 
   [:system :movement movement-system :moveable]
   [:component :moveable
    [move {:subscriptions [:move-change :collision]}]])
+#+END_SRC
+* Behavior is described with data, not code
+#+BEGIN_SRC clojure
+(mk-entity state
+           :missle-1
+           :components [[:explosive {:hit-radius 10}]
+                        [:moveable {:x 20 :y 100}]
+                        [:heat-seeking {:target :player1 :velocity 10}]])
 #+END_SRC
 * Interpreting the game spec
 #+BEGIN_SRC clojure
