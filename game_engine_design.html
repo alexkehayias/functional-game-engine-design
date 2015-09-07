@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>Functional Game Engine Design</title>
-<meta name="author" content="(Alex Kehayias)"/>
+<meta name="author" content="(@alexkehayias)"/>
 <link rel="stylesheet" href="http://cdn.jsdelivr.net/reveal.js/3.0.0/css/reveal.css"/>
 <link rel="stylesheet" href="http://cdn.jsdelivr.net/reveal.js/3.0.0/css/theme/sky.css" id="theme"/>
 <link rel="stylesheet" href=""/>
@@ -25,8 +25,8 @@
 <div class="slides">
 <section id="sec-title-slide">
 <h1>Functional Game Engine Design</h1>
-<h2>Alex Kehayias</h2>
-<h2><a href="mailto:@alexkehayias">@alexkehayias</a></h2>
+<h2>@alexkehayias</h2>
+<h2><a href="mailto:alexkehayias@127.0.0.1">alexkehayias@127.0.0.1</a></h2>
 <h2></h2>
 </section>
 
@@ -69,24 +69,53 @@
 </section>
 </section>
 <section>
-<section id="slide-orgheadline7">
-<h2 id="orgheadline7">Why another game engine? Why not use Unity/CryEngine/etc?</h2>
-<div class="outline-text-2" id="text-orgheadline7">
+<section id="slide-orgheadline6">
+<h2 id="orgheadline6">What is a game?</h2>
+<div class="outline-text-2" id="text-orgheadline6">
 </div></section>
 </section>
 <section>
 <section id="slide-orgheadline5">
-<h3 id="orgheadline5">Because it's art</h3>
+<h3 id="orgheadline5">STATE!</h3>
+<ul>
+<li>The only thing that matters</li>
+<li>The state is the game is the fun</li>
+<li>Games are state transitions at 60 FPS</li>
+<li>Games are complicated (lots of moving parts)</li>
+<li>Writing games should be less complex (less intertwined parts)</li>
+
+</ul>
 </section>
 </section>
 <section>
-<section id="slide-orgheadline6">
-<h3 id="orgheadline6">Also it's fun!!</h3>
+<section id="slide-orgheadline7">
+<h2 id="orgheadline7">Statetime</h2>
+
+<div class="figure">
+<p><img src="./statetime.png" alt="statetime.png" />
+</p>
+</div>
 </section>
+</section>
+<section>
+<section id="slide-orgheadline10">
+<h2 id="orgheadline10">Why another game engine? Why not use Unity/CryEngine/etc?</h2>
+<div class="outline-text-2" id="text-orgheadline10">
+</div></section>
 </section>
 <section>
 <section id="slide-orgheadline8">
-<h2 id="orgheadline8">Goals for a game engine</h2>
+<h3 id="orgheadline8">Because it's art</h3>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline9">
+<h3 id="orgheadline9">Also it's fun!!</h3>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline11">
+<h2 id="orgheadline11">Goals for a game engine</h2>
 <ul>
 <li>Modularity in adding new features and content</li>
 <li>Make how the game runs declarative</li>
@@ -99,8 +128,8 @@
 </section>
 </section>
 <section>
-<section id="slide-orgheadline9">
-<h2 id="orgheadline9">Example</h2>
+<section id="slide-orgheadline12">
+<h2 id="orgheadline12">Example</h2>
 <div class="org-src-container">
 
 <pre  class="src src-java">  <span style="color: #465457;">// </span><span style="color: #465457;">Example taken from http://www.gamedev.net/page/resources/_/technical/game-programming/making-a-game-engine-core-design-principles-r3210</span>
@@ -141,8 +170,8 @@
 </section>
 </section>
 <section>
-<section id="slide-orgheadline10">
-<h2 id="orgheadline10">Functional example</h2>
+<section id="slide-orgheadline13">
+<h2 id="orgheadline13">Functional example</h2>
 <div class="org-src-container">
 
 <pre  class="src src-clojure">  <span style="color: #465457;">;; </span><span style="color: #465457;">Reduce the game state over a collection of functions to get the next frame</span>
@@ -154,39 +183,23 @@
 </section>
 </section>
 <section>
-<section id="slide-orgheadline11">
-<h2 id="orgheadline11">Modularity</h2>
-</section>
-</section>
-<section>
-<section id="slide-orgheadline12">
-<h2 id="orgheadline12">State</h2>
-<ul>
-<li>The only thing that matters</li>
-<li>The state is the game is the fun</li>
-<li>Games are state transitions at 60 FPS</li>
-<li>Games are complicated (lots of moving parts)</li>
-<li>Writing games should be less complex (less intertwined parts)</li>
-
-</ul>
-</section>
-</section>
-<section>
-<section id="slide-orgheadline13">
-<h2 id="orgheadline13"><span class="todo TODO">TODO</span> Image of a bunch of layers with an arrow showing time where each layer is a new frame</h2>
-</section>
-</section>
-<section>
 <section id="slide-orgheadline14">
-<h2 id="orgheadline14"><span class="todo TODO">TODO</span> Class hierarchies for modeling games</h2>
-<p>
-Insert an image showing a game object hierarchy and the coupling that happens as a result
-</p>
+<h2 id="orgheadline14">Modularity</h2>
 </section>
 </section>
 <section>
 <section id="slide-orgheadline15">
 <h2 id="orgheadline15">Class hierarchies for modeling games</h2>
+
+<div class="figure">
+<p><img src="./class_hierarchy.png" alt="class_hierarchy.png" />
+</p>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline16">
+<h2 id="orgheadline16">Class hierarchies for modeling games</h2>
 <ul>
 <li>Initially expresses the problem domain succinctly</li>
 <li>As code bases grows and changes more ambiguity around overrides, sub classing, and cascading breaking changes</li>
@@ -198,28 +211,37 @@ Insert an image showing a game object hierarchy and the coupling that happens as
 </section>
 </section>
 <section>
-<section id="slide-orgheadline21">
-<h2 id="orgheadline21">Entity Component System</h2>
+<section id="slide-orgheadline17">
+<h2 id="orgheadline17">Entity Component System</h2>
 <ul>
 <li>Originates from the development of Dungeon Siege for use with online multiplayer demands</li>
 <li>Popularized by the Unity game engine</li>
 <li>Decouples object hierarchies and focuses on collections of aspects and the means of iterating over theme</li>
-<li>Works really well with functional programming techniques!</li>
+<li>Easily add, remove, synthesise new things from reusable components</li>
+<li>Pairs well with functional programming techniques!</li>
 
 </ul>
 </section>
 </section>
 <section>
-<section id="slide-orgheadline16">
-<h3 id="orgheadline16"><span class="todo TODO">TODO</span> How it works</h3>
-<p>
-Insert an image showing what a collection of components looks like
+<section id="slide-orgheadline18">
+<h2 id="orgheadline18">Component based modeling</h2>
+
+<div class="figure">
+<p><img src="./component_modeling.png" alt="component_modeling.png" />
 </p>
+</div>
 </section>
 </section>
 <section>
-<section id="slide-orgheadline17">
-<h3 id="orgheadline17">Entity</h3>
+<section id="slide-orgheadline23">
+<h2 id="orgheadline23">How it works</h2>
+<div class="outline-text-2" id="text-orgheadline23">
+</div></section>
+</section>
+<section>
+<section id="slide-orgheadline19">
+<h3 id="orgheadline19">Entity</h3>
 <div class="org-src-container">
 
 <pre  class="src src-clojure">{<span style="color: #ae81ff;">:player1</span> [<span style="color: #ae81ff;">:controllable</span> <span style="color: #ae81ff;">:moveable</span> <span style="color: #ae81ff;">:collidable</span>]}
@@ -233,8 +255,8 @@ Insert an image showing what a collection of components looks like
 </section>
 </section>
 <section>
-<section id="slide-orgheadline18">
-<h3 id="orgheadline18">Component</h3>
+<section id="slide-orgheadline20">
+<h3 id="orgheadline20">Component</h3>
 <div class="org-src-container">
 
 <pre  class="src src-clojure">{<span style="color: #ae81ff;">:moveable</span> f}
@@ -248,8 +270,8 @@ Insert an image showing what a collection of components looks like
 </section>
 </section>
 <section>
-<section id="slide-orgheadline19">
-<h3 id="orgheadline19">System</h3>
+<section id="slide-orgheadline21">
+<h3 id="orgheadline21">System</h3>
 <div class="org-src-container">
 
 <pre  class="src src-clojure">{<span style="color: #ae81ff;">:movement</span> f}
@@ -264,8 +286,8 @@ Insert an image showing what a collection of components looks like
 </section>
 </section>
 <section>
-<section id="slide-orgheadline20">
-<h3 id="orgheadline20">Scene</h3>
+<section id="slide-orgheadline22">
+<h3 id="orgheadline22">Scene</h3>
 <div class="org-src-container">
 
 <pre  class="src src-clojure">{<span style="color: #ae81ff;">:title-screen</span> [<span style="color: #ae81ff;">:main-menu</span> <span style="color: #ae81ff;">:input</span>]
@@ -280,8 +302,8 @@ Insert an image showing what a collection of components looks like
 </section>
 </section>
 <section>
-<section id="slide-orgheadline22">
-<h2 id="orgheadline22">Seeing a pattern here?</h2>
+<section id="slide-orgheadline24">
+<h2 id="orgheadline24">Seeing a pattern here?</h2>
 <ul>
 <li>It's all data</li>
 <li>It's all values</li>
@@ -290,8 +312,8 @@ Insert an image showing what a collection of components looks like
 </section>
 </section>
 <section>
-<section id="slide-orgheadline23">
-<h2 id="orgheadline23">Gameoiconicity?</h2>
+<section id="slide-orgheadline25">
+<h2 id="orgheadline25">Gameoiconicity?</h2>
 <ul>
 <li>Game is data, data is game</li>
 <li>Game can rewrite the game during game time</li>
@@ -303,8 +325,8 @@ dynamic as <i>fuck</i>!&#x2026;
 </section>
 </section>
 <section>
-<section id="slide-orgheadline24">
-<h2 id="orgheadline24">Implementation</h2>
+<section id="slide-orgheadline26">
+<h2 id="orgheadline26">Implementation</h2>
 <p>
 Game state is a data structure, like a database
 </p>
@@ -332,8 +354,8 @@ The game loop recursively calls a function of state
 </section>
 </section>
 <section>
-<section id="slide-orgheadline25">
-<h2 id="orgheadline25">Implementation</h2>
+<section id="slide-orgheadline27">
+<h2 id="orgheadline27">Implementation</h2>
 <p>
 The game function reduces over all system functions
 </p>
@@ -361,13 +383,13 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline26">
-<h2 id="orgheadline26">Basically, everything is a function of the overall game state</h2>
+<section id="slide-orgheadline28">
+<h2 id="orgheadline28">Basically, everything is a function of the overall game state</h2>
 </section>
 </section>
 <section>
-<section id="slide-orgheadline27">
-<h2 id="orgheadline27">The good</h2>
+<section id="slide-orgheadline29">
+<h2 id="orgheadline29">The good</h2>
 <ul>
 <li>Can be easily expressed with pure functions</li>
 <li>Easy to reason about</li>
@@ -382,8 +404,8 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline28">
-<h2 id="orgheadline28">The bad</h2>
+<section id="slide-orgheadline30">
+<h2 id="orgheadline30">The bad</h2>
 <ul>
 <li>Everyone has access to everything everywhere</li>
 <li>What happens when you need parameterization?</li>
@@ -395,13 +417,13 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline29">
-<h2 id="orgheadline29">We need more sugar!</h2>
+<section id="slide-orgheadline31">
+<h2 id="orgheadline31">We need more sugar!</h2>
 </section>
 </section>
 <section>
-<section id="slide-orgheadline30">
-<h2 id="orgheadline30">Principle of least privilege (of state)</h2>
+<section id="slide-orgheadline32">
+<h2 id="orgheadline32">Principle of least privilege (of state)</h2>
 <ul>
 <li>Only have access to what you need</li>
 <li>Only can change what belongs to you</li>
@@ -411,8 +433,8 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline31">
-<h2 id="orgheadline31">Lenses</h2>
+<section id="slide-orgheadline33">
+<h2 id="orgheadline33">Lenses</h2>
 <div class="org-src-container">
 
 <pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span>combine-fn <span style="color: #8c8c8c;">(</span>body-fn <span style="color: #8c8c8c;">(</span>args-fn input<span style="color: #8c8c8c;">)))</span>
@@ -428,8 +450,8 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline32">
-<h2 id="orgheadline32">Now we can focus on one aspect using pure functions</h2>
+<section id="slide-orgheadline34">
+<h2 id="orgheadline34">Now we can focus on one aspect using pure functions</h2>
 <div class="org-src-container">
 
 <pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defn</span> <span style="color: #a6e22e;">component-f</span>
@@ -452,8 +474,8 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline33">
-<h2 id="orgheadline33">Polymorphism</h2>
+<section id="slide-orgheadline35">
+<h2 id="orgheadline35">Polymorphism</h2>
 <ul>
 <li>By passing in an entity ID we can make a decision about what the component should do</li>
 <li>multimethods, protocols, conditionals to handle different implementations of the same component</li>
@@ -463,8 +485,8 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline34">
-<h2 id="orgheadline34">Polymorphism example</h2>
+<section id="slide-orgheadline36">
+<h2 id="orgheadline36">Polymorphism example</h2>
 <div class="org-src-container">
 
 <pre  class="src src-clojure"><span style="color: #465457;">;; </span><span style="color: #465457;">Dispatch on the entity-id</span>
@@ -482,8 +504,8 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline38">
-<h2 id="orgheadline38">Sharing state ಠ_<sub>ಠ</sub></h2>
+<section id="slide-orgheadline40">
+<h2 id="orgheadline40">Sharing state ಠ_<sub>ಠ</sub></h2>
 <ul>
 <li>Games tend to have things that interact with each other</li>
 <li>Share component state without tightly coupling</li>
@@ -493,8 +515,8 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline35">
-<h3 id="orgheadline35">Coupling</h3>
+<section id="slide-orgheadline37">
+<h3 id="orgheadline37">Coupling</h3>
 <div class="org-src-container">
 
 <pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defn</span> <span style="color: #a6e22e;">attack</span>
@@ -514,8 +536,8 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline36">
-<h3 id="orgheadline36">Use an event queue</h3>
+<section id="slide-orgheadline38">
+<h3 id="orgheadline38">Use an event queue</h3>
 <ul>
 <li>Loose coupling (still need to know shape of data)</li>
 <li>Any component can emit a message with an event ID</li>
@@ -527,8 +549,8 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline37">
-<h3 id="orgheadline37">Using the event inbox</h3>
+<section id="slide-orgheadline39">
+<h3 id="orgheadline39">Using the event inbox</h3>
 <div class="org-src-container">
 
 <pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defn</span> <span style="color: #a6e22e;">attack</span>
@@ -556,8 +578,8 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline39">
-<h2 id="orgheadline39">Making the game declarative</h2>
+<section id="slide-orgheadline41">
+<h2 id="orgheadline41">Making the game declarative</h2>
 <ul>
 <li>Capture how the game runs in one place</li>
 <li>Use the full tooling of higher order functions and data manipulation functions</li>
@@ -572,8 +594,8 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline40">
-<h2 id="orgheadline40">Declarative game</h2>
+<section id="slide-orgheadline42">
+<h2 id="orgheadline42">Declarative game</h2>
 <div class="org-src-container">
 
 <pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span>mk-game-state
@@ -608,8 +630,8 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline41">
-<h2 id="orgheadline41">Interpreting the game spec</h2>
+<section id="slide-orgheadline43">
+<h2 id="orgheadline43">Interpreting the game spec</h2>
 <div class="org-src-container">
 
 <pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defmulti</span> <span style="color: #a6e22e;">mk-state</span>
@@ -641,8 +663,8 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline42">
-<h2 id="orgheadline42">Some limitations</h2>
+<section id="slide-orgheadline44">
+<h2 id="orgheadline44">Some limitations</h2>
 <ul>
 <li>Anything that is not def'd, i.e anonymous functions, can not be re-evaluated while the game is running</li>
 <li>Component functions rely heavily on higher order functions that return anonymous functions</li>
@@ -653,16 +675,14 @@ A component function takes state and returns new state modified for that entity 
 </section>
 </section>
 <section>
-<section id="slide-orgheadline52">
-<h2 id="orgheadline52">Performance tuning</h2>
-<p>
-Functional programming ain't free!
-</p>
-</section>
+<section id="slide-orgheadline55">
+<h2 id="orgheadline55">Performance tuning</h2>
+<div class="outline-text-2" id="text-orgheadline55">
+</div></section>
 </section>
 <section>
-<section id="slide-orgheadline43">
-<h3 id="orgheadline43">Variadic function signatures</h3>
+<section id="slide-orgheadline45">
+<h3 id="orgheadline45">Variadic function signatures</h3>
 <div class="org-src-container">
 
 <pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defn</span> <span style="color: #a6e22e;">foo</span> [x &amp; args]
@@ -679,8 +699,8 @@ Functional programming ain't free!
 </section>
 </section>
 <section>
-<section id="slide-orgheadline44">
-<h3 id="orgheadline44">Multiple arity functions</h3>
+<section id="slide-orgheadline46">
+<h3 id="orgheadline46">Multiple arity functions</h3>
 <div class="org-src-container">
 
 <pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span><span style="color: #f92672; font-weight: bold;">defn</span> <span style="color: #a6e22e;">foo</span>
@@ -699,8 +719,8 @@ Functional programming ain't free!
 </section>
 </section>
 <section>
-<section id="slide-orgheadline45">
-<h3 id="orgheadline45">Avoid partials</h3>
+<section id="slide-orgheadline47">
+<h3 id="orgheadline47">Avoid partials</h3>
 <div class="org-src-container">
 
 <pre  class="src src-clojure"><span style="color: #8c8c8c;">(</span>apply <span style="color: #8c8c8c;">(</span>partial x<span style="color: #8c8c8c;">)</span> [y z]<span style="color: #8c8c8c;">)</span>
@@ -709,8 +729,8 @@ Functional programming ain't free!
 </section>
 </section>
 <section>
-<section id="slide-orgheadline46">
-<h3 id="orgheadline46">Empty checking</h3>
+<section id="slide-orgheadline48">
+<h3 id="orgheadline48">Empty checking</h3>
 <div class="org-src-container">
 
 <pre  class="src src-clojure"><span style="color: #465457;">;; </span><span style="color: #465457;">Bad</span>
@@ -722,8 +742,8 @@ Functional programming ain't free!
 </section>
 </section>
 <section>
-<section id="slide-orgheadline47">
-<h3 id="orgheadline47">Runtime polymorphism</h3>
+<section id="slide-orgheadline49">
+<h3 id="orgheadline49">Runtime polymorphism</h3>
 <div class="org-src-container">
 
 <pre  class="src src-clojure"><span style="color: #465457;">;; </span><span style="color: #465457;">Bad</span>
@@ -750,8 +770,8 @@ Functional programming ain't free!
 </section>
 </section>
 <section>
-<section id="slide-orgheadline48">
-<h3 id="orgheadline48">Literals</h3>
+<section id="slide-orgheadline50">
+<h3 id="orgheadline50">Literals</h3>
 <div class="org-src-container">
 
 <pre  class="src src-clojure"><span style="color: #465457;">;; </span><span style="color: #465457;">Vector 1 2 3 is constructed every time foo is called</span>
@@ -773,8 +793,20 @@ Functional programming ain't free!
 </section>
 </section>
 <section>
-<section id="slide-orgheadline49">
-<h3 id="orgheadline49">ClojureScript specific</h3>
+<section id="slide-orgheadline51">
+<h3 id="orgheadline51">Lazyness</h3>
+<ul>
+<li>Most of the Clojure core is lazy map/for/concat/filter etc.</li>
+<li>Game code is usually eager and inputs are finite</li>
+<li>Favor reduce over map</li>
+<li>Write your own for loop that does not use lazy-seq</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline52">
+<h3 id="orgheadline52">ClojureScript specific</h3>
 <ul>
 <li>Clojure only evaluates false for nil and false, not null/undefined/NaN/""/0</li>
 <li>If you already know it's a boolean, skip the extra checking with a typehint ^boolean</li>
@@ -783,8 +815,8 @@ Functional programming ain't free!
 </section>
 </section>
 <section>
-<section id="slide-orgheadline50">
-<h3 id="orgheadline50">Immutability?</h3>
+<section id="slide-orgheadline53">
+<h3 id="orgheadline53">Immutability?</h3>
 <ul>
 <li>Tried to write my own data structure to take advantage of mutability</li>
 <li>Mine was slower</li>
@@ -796,13 +828,13 @@ Functional programming ain't free!
 </section>
 </section>
 <section>
-<section id="slide-orgheadline51">
-<h3 id="orgheadline51">The slowest part is usually your implementation, not functional programming</h3>
+<section id="slide-orgheadline54">
+<h3 id="orgheadline54">The slowest part is usually your implementation, not functional programming</h3>
 </section>
 </section>
 <section>
-<section id="slide-orgheadline53">
-<h2 id="orgheadline53">The Functional Game Engine I'm Building</h2>
+<section id="slide-orgheadline56">
+<h2 id="orgheadline56">The Functional Game Engine I'm Building</h2>
 <ul>
 <li>Chocolatier</li>
 <li><a href="https://github.com/alexkehayias/chocolatier">https://github.com/alexkehayias/chocolatier</a></li>
@@ -813,13 +845,25 @@ Functional programming ain't free!
 </section>
 </section>
 <section>
-<section id="slide-orgheadline54">
-<h2 id="orgheadline54">Let's make creating games sweeter!</h2>
+<section id="slide-orgheadline57">
+<h2 id="orgheadline57">Let's make creating games sweeter!</h2>
 <p>
 Thank you!
 @alexkehayias
 <a href="https://github.com/alexkehayias/chocolatier">https://github.com/alexkehayias/chocolatier</a>
 </p>
+</section>
+</section>
+<section>
+<section id="slide-orgheadline58">
+<h2 id="orgheadline58">Resources</h2>
+<ul>
+<li>Scott Bilas GDC talk that started it all: <a href="http://t-machine.org/index.php/2007/12/22/entity-systems-are-the-future-of-mmog-development-part-3/">http://t-machine.org/index.php/2007/12/22/entity-systems-are-the-future-of-mmog-development-part-3/</a></li>
+<li>Game Programming Patterns chapter on Components: <a href="http://gameprogrammingpatterns.com/component.html">http://gameprogrammingpatterns.com/component.html</a></li>
+<li>I <i>don't</i> recommend Adam Martin's blog series on ECS even though it is reference a lot</li>
+<li></li>
+
+</ul>
 </section>
 </section>
 </div>
@@ -844,7 +888,7 @@ overview: true,
 width: 1140,
 height: 900,
 margin: 0.10,
-minScale: 0.50,
+minScale: 1.00,
 maxScale: 2.50,
 
 theme: Reveal.getQueryHash().theme, // available themes are in /css/theme

@@ -9,7 +9,7 @@
 
 #+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/3.0.0/
 #+REVEAL_MARGIN: 0.1
-#+REVEAL_MIN_SCALE: 0.5
+#+REVEAL_MIN_SCALE: 1.0
 #+REVEAL_MAX_SCALE: 2.5
 #+REVEAL_TRANS: none
 #+REVEAL_THEME: sky
@@ -30,11 +30,20 @@
 - I'm a self taught musician
 - I'm a self taught entrepreneur
 - I'm a self taught developer
-- I create things and it's personal
+- I'm here to build worlds of my own vision
+* What is a game?
+** STATE!
+- The only thing that matters
+- The state is the game is the fun
+- Games are state transitions at 60 FPS
+- Games are complicated (lots of moving parts)
+- Writing games can be less complex (less intertwined parts)
+** Game == Statetime
+[[./statetime.png]]
 * Why another game engine? Why not use Unity/CryEngine/etc?
 ** Because it's art
 ** Also it's fun!!
-* Goals for a game engine
+* Goals for a functional game engine
 - Modularity in adding new features and content
 - Make how the game runs declarative
 - Unit testable by mocking data only
@@ -85,15 +94,8 @@
           [f1 f2 f3 f4])
 #+END_SRC
 * Modularity
-* State
-- The only thing that matters
-- The state is the game is the fun
-- Games are state transitions at 60 FPS
-- Games are complicated (lots of moving parts)
-- Writing games should be less complex (less intertwined parts)
-* TODO Image of a bunch of layers with an arrow showing time where each layer is a new frame
-* TODO Class hierarchies for modeling games
-Insert an image showing a game object hierarchy and the coupling that happens as a result
+* Class hierarchies for modeling games
+[[./class_hierarchy.png]]
 * Class hierarchies for modeling games
 - Initially expresses the problem domain succinctly
 - As code bases grows and changes more ambiguity around overrides, sub classing, and cascading breaking changes
@@ -104,9 +106,11 @@ Insert an image showing a game object hierarchy and the coupling that happens as
 - Originates from the development of Dungeon Siege for use with online multiplayer demands
 - Popularized by the Unity game engine
 - Decouples object hierarchies and focuses on collections of aspects and the means of iterating over theme
-- Works really well with functional programming techniques!
-** TODO How it works
-Insert an image showing what a collection of components looks like
+- Easily add, remove, synthesise new things from reusable components
+- Pairs well with functional programming techniques!
+* Component based modeling
+[[./component_modeling.png]]
+* How it works
 ** Entity
 #+BEGIN_SRC clojure
 {:player1 [:controllable :moveable :collidable]}
@@ -427,3 +431,8 @@ A component function takes state and returns new state modified for that entity 
 Thank you!
 @alexkehayias
 https://github.com/alexkehayias/chocolatier
+* Resources
+- Scott Bilas GDC talk that started it all: http://t-machine.org/index.php/2007/12/22/entity-systems-are-the-future-of-mmog-development-part-3/
+- Game Programming Patterns chapter on Components: http://gameprogrammingpatterns.com/component.html
+- I /don't/ recommend Adam Martin's blog series on ECS even though it is reference a lot
+-
