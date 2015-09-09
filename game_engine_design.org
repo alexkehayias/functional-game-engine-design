@@ -22,15 +22,6 @@
 - You can build a game
 - You can build a game engine
 ** They tend to be mutually exclusive...
-* About me
-- I'm not a game developer
-- I'm not a "gamer"
-- I don't have a CS degree
-* But you should believe me anyway...
-- I'm a self taught musician
-- I'm a self taught entrepreneur
-- I'm a self taught developer
-- I'm here to build worlds of my own vision
 * What is a game?
 ** STATE!
 - The only thing that matters
@@ -69,11 +60,11 @@
               }
           }
 
-          if (input.keyDown('left'))
+      if (input.keyDown('left'))
           {
           player.move(-1, 0);
           }
-          // ... rest of player logic
+      // ... rest of player logic
       }
 
       void draw()
@@ -105,7 +96,7 @@
 * Entity Component System
 - Originates from the development of Dungeon Siege for use with online multiplayer demands
 - Popularized by the Unity game engine
-- Decouples object hierarchies and focuses on collections of aspects and the means of iterating over theme
+- Decouples object hierarchies and focuses on collections of aspects and the means of iterating over them
 - Easily add, remove, synthesise new things from reusable components
 - Pairs well with functional programming techniques!
 * Component based modeling
